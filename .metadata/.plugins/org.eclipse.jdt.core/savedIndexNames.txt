@@ -1,0 +1,20 @@
+INDEX VERSION 1.127+C:\Users\Alex\Desktop\Documents\GitHub\251_A3\.metadata\.plugins\org.eclipse.jdt.core
+3208348786.index
+2355066768.index
+2032977337.index
+4042793792.index
+507044819.index
+1921434313.index
+363248586.index
+4067068589.index
+1073190104.index
+4143041746.index
+1630659722.index
+2050908165.index
+3299422388.index
+51915478.index
+3024903679.index
+2799350720.index
+3400675815.index
+262141639.index
+4164139556.index
