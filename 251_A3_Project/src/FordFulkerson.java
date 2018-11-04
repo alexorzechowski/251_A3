@@ -36,7 +36,6 @@ public class FordFulkerson {
 			adjList.get(n0).add(n1);	//Add n1 to n0's adj list
 		}
 		
-		//DFS(source,destination, graph,allNodes,adjList,color,numDone,Stack);
 		return DFS(source,destination, graph,allNodes,adjList,color,numDone, Stack);
 	}
 	public static ArrayList<Integer> DFS(Integer source, Integer destination, WGraph graph, ArrayList<Integer> allNodes,ArrayList<ArrayList<Integer>> adjList, int[] color, int numDone,ArrayList<Integer> Stack ){
@@ -71,56 +70,65 @@ public class FordFulkerson {
 			// YOUR CODE GOES HERE
 		WGraph resG = new WGraph();
 		ArrayList<Edge> gEdges = graph.getEdges();
-		int[] gFlows = new int[gEdges.size()];
+		//ArrayList<Edge> gEdgesSorted = graph.listOfEdgesSorted();
+		int n=graph.getNbNodes();
+		int[][] gFlows = new int[n][n];
 		ArrayList<Integer> resGCaps = new ArrayList<Integer>(gEdges.size());
-		ArrayList<Integer> resGFlows = new ArrayList<Integer>(gEdges.size());
-		for(int i=0; i<resGFlows.size(); i++)
-			resGFlows.set(i, 0);
+		int[][] resGFlows = new int[n][n];
+		
 		//Build Residual Graph
-		ArrayList<Integer> resG_edge_directions = new ArrayList<Integer>(gEdges.size());
+		int[][] resG_edge_directions = new int[n][n];
 		for(int i=0; i<gEdges.size(); i++){
 			Edge e=gEdges.get(i);
-			if(gFlows[i]<e.weight){
-				int c_res=e.weight-gFlows[i];
+			if(gFlows[e.nodes[0]][e.nodes[1]] <e.weight){
+				int c_res=e.weight- gFlows[e.nodes[0]][e.nodes[1]];
 				resG.addEdge(new Edge(e.nodes[0],e.nodes[1],c_res));
-				resGCaps.add(c_res);
-				resG_edge_directions.add(1);	//1=Forward
+				resG_edge_directions[e.nodes[0]][e.nodes[1]]=1;	//1=Forward
 			}
-			if(gFlows[i]>0){
-				resG.addEdge(new Edge(e.nodes[1],e.nodes[0],gFlows[i]));
-				resGCaps.add(gFlows[i]);
-				resG_edge_directions.add(2);	//2=backward
+			if(gFlows[e.nodes[0]][e.nodes[1]] >0){
+				resG.addEdge(new Edge(e.nodes[1],e.nodes[0],gFlows[e.nodes[0]][e.nodes[1]] ));
+				resG_edge_directions[e.nodes[0]][e.nodes[1]] =2;	//2=backward
 			}				
 		}
+		
 		while(!pathDFS(source,destination,resG).isEmpty()){
 			//Augment Path
-			ArrayList<Integer> path = pathDFS(source,destination,graph);
-			int B=Collections.max(resGCaps);	//Start with maximum possible bottleneck
-			for(int i=0; i<path.size()-1; i++){	//Find B
-				Edge e=resG.getEdge(i, i+1);
-				if(e.weight - resGFlows.get(i)<B)
-					B=e.weight - resGFlows.get(i);
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
 			}
+			ArrayList<Integer> path = pathDFS(source,destination,resG);
+			System.out.println("Path in resG is "+Arrays.toString(path.toArray()));
+			System.out.println("path size is " +path.size());
+			ArrayList<Edge> edgesSorted = resG.listOfEdgesSorted();
+			int B=edgesSorted.get(edgesSorted.size()-1).weight;	//Start with max possible B =max capacity, then see if we can decrease
+			System.out.println("Starting B is " +B);
+			for(int i=0; i<path.size()-1; i++){	//Find B for the path found
+				Edge e=resG.getEdge(path.get(i), path.get(i+1));
+				//System.out.println("Residual Flow is "+resGFlows.get(i));
+				//System.out.println("Edge capacity is " +e.weight);
+				if(e.weight - resGFlows[e.nodes[0]][e.nodes[1]] <B)					
+					B=e.weight - resGFlows[e.nodes[0]][e.nodes[1]] ;
+			}
+			System.out.println("Finishing B is " +B);
 			for(int i=0; i<path.size()-1; i++){
-				int dir=resG_edge_directions.get(i);
-				if(dir==1){
-					resGFlows.set(i, resGFlows.get(i)+B);
+				Edge e=resG.getEdge(path.get(i), path.get(i+1));
+				int dir=resG_edge_directions[e.nodes[0]][e.nodes[1]] ;
+				if(dir==1){	//If forward directed edge, add B to the flow in resG along the path
+					resGFlows[e.nodes[0]][e.nodes[1]]= 	resGFlows[e.nodes[0]][e.nodes[1]]+B;
+					System.out.println(Arrays.deepToString(resGFlows));
 				}
 				else
-					resGFlows.set(i, resGFlows.get(i)-B);				
+					resGFlows[e.nodes[0]][e.nodes[1]]= 	resGFlows[e.nodes[0]][e.nodes[1]]-B;
 			}
-			//Update resG with the new flows
-			for(int i=0; i<path.size(); i++){
-				Edge e=resG.getEdge(i, i+1);
-				resG.setEdge(e.nodes[0], e.nodes[1], path.get(i));
-			}
+			//ReBuild the Residual Graph! ie Update resG with the new flows
 		}
 		//Calc max flow
-		resG.getSource();
-		ArrayList<Edge> resG_edges = resG.getEdges();
-		for(Edge e: resG_edges){
-			if(e.nodes[0]==0)
-				maxFlow=maxFlow+e.weight;
+		int src = resG.getSource();
+		for(int i=0; i<n-1; i++){
+			maxFlow = maxFlow+resGFlows[src][i];
 		}
 		
 			//End Your code
@@ -158,8 +166,7 @@ public class FordFulkerson {
 		 String file = args[0];
 		 File f = new File(file);
 		 WGraph g = new WGraph(file);	
-		 System.out.println(g);
-		 System.out.println(Arrays.toString(pathDFS(g.getSource(),g.getDestination(),g).toArray()));
-		 //fordfulkerson(g.getSource(),g.getDestination(),g,f.getAbsolutePath().replace(".txt",""));
+		 //System.out.println(Arrays.toString(pathDFS(g.getSource(),g.getDestination(),g).toArray()));
+		 fordfulkerson(g.getSource(),g.getDestination(),g,f.getAbsolutePath().replace(".txt",""));
 	 }
 }
