@@ -1,3 +1,5 @@
+import java.util.*;
+
 public class BellmanFord{
 
 	
@@ -58,6 +60,29 @@ public class BellmanFord{
          */
         
         /* YOUR CODE GOES HERE */
+    	distances=new int[g.getNbNodes()];
+    	predecessors=new int[g.getNbNodes()];
+    	for(int i=0; i<g.getNbNodes(); i++){
+    		distances[i]=Integer.MAX_VALUE;
+    		predecessors[i]=-1;
+    	}
+    	distances[source]=0;
+    	//Relax Edges Repeatedly
+    	ArrayList<Edge> edges = g.getEdges();
+    	for(int i=0; i<g.getNbNodes()-1; i++){
+    		for(Edge e: edges){
+    			if(distances[e.nodes[0]]+e.weight < distances[e.nodes[1]]){
+    				distances[e.nodes[1]]=distances[e.nodes[0]]+e.weight; //Relax Edge
+    				predecessors[e.nodes[1]] = e.nodes[0];		//Mark pred
+    				System.out.println("pred of node "+e.nodes[1]+" is "+e.nodes[0]);
+    			}
+    		}
+    	}
+    	//Check for neg weight cycles
+    	for(Edge e: edges){
+    		if(distances[e.nodes[0]]+e.weight < distances[e.nodes[1]])
+    			throw new NegativeWeightException();
+    	}
     }
 
     public int[] shortestPath(int destination) throws BellmanFordException{
@@ -68,8 +93,26 @@ public class BellmanFord{
          */
 
         /* YOUR CODE GOES HERE (update the return statement as well!) */
-        
-        return null;
+        ArrayList<Integer> path = new ArrayList<Integer>();
+        int curNode=destination;
+        predecessors[source]=-2;
+        System.out.println("pred is "+Arrays.toString(predecessors));
+        for(int i=0; i<predecessors.length-1; i++){
+        	if(curNode==-2)	//reached source
+        		break;
+        	if(predecessors[curNode]==-1){
+        		throw new PathDoesNotExistException();
+        	}
+        	else
+        		path.add(curNode);
+    			//System.out.println("Added "+curNode);
+    			curNode=predecessors[curNode];
+        }
+        Collections.reverse(path);
+        int[] res = new int[path.size()];
+        for(int i=0; i<res.length; i++)
+        	res[i]=path.get(i);
+        return res;
     }
 
     public void printPath(int destination){

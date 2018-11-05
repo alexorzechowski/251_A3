@@ -75,7 +75,6 @@ public class FordFulkerson {
 			}
 		}
 		color[source]=2;	//Mark Black
-		numDone++;
 		return pi;
 		
 	}
@@ -110,7 +109,7 @@ public class FordFulkerson {
 				System.out.println("Added backward edge from "+e.nodes[0]+" to "+e.nodes[1]);
 			}				
 		}
-		
+		System.out.println("Initial resG is "+resG);
 		while(!pathDFS(source,destination,resG).isEmpty()){
 			try {
 				Thread.sleep(1000);
@@ -133,7 +132,8 @@ public class FordFulkerson {
 			System.out.println("Finishing B is " +B);
 			for(int i=0; i<path.size()-1; i++){
 				Edge e=resG.getEdge(path.get(i), path.get(i+1));
-				int dir=resG_edge_directions[e.nodes[0]][e.nodes[1]] ;
+				int dir=resG_edge_directions[e.nodes[0]][e.nodes[1]] ;				
+
 				if(dir==1){	//If forward directed edge, add B to the flow in resG along the path
 					gFlows[e.nodes[0]][e.nodes[1]]= gFlows[e.nodes[0]][e.nodes[1]]+B;
 					System.out.println("Increased flow by "+B+" along edge "+e.nodes[0]+" "+e.nodes[1]);
@@ -143,6 +143,7 @@ public class FordFulkerson {
 					gFlows[e.nodes[0]][e.nodes[1]]=gFlows[e.nodes[0]][e.nodes[1]]-B;
 					System.out.println("Subtracted flow by "+B+" along edge "+e.nodes[0]+" "+e.nodes[1]);
 				}
+				
 			}
 			//ReBuild the Residual Graph. ie Update resG with the new flows
 			gEdges=resG.getEdges();
