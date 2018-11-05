@@ -153,15 +153,15 @@ public class FordFulkerson {
 				Edge e=gEdges.get(i);
 				if(gFlows[e.nodes[0]][e.nodes[1]] <e.weight){
 					int c_res=e.weight- gFlows[e.nodes[0]][e.nodes[1]];			
-					if(resG.getEdge(e.nodes[0], e.nodes[1]) ==null)	//Check if edge already exists
+					//if(resG.getEdge(e.nodes[0], e.nodes[1]) ==null)	//Check if edge already exists
 						resG.addEdge(new Edge(e.nodes[0],e.nodes[1],c_res));
-					else resG.setEdge(e.nodes[0], e.nodes[1], c_res);
+					//else resG.setEdge(e.nodes[0], e.nodes[1], c_res);
 					resG_edge_directions[e.nodes[0]][e.nodes[1]]=1;	//1=Forward
 				}
 				if(gFlows[e.nodes[0]][e.nodes[1]] >0){
-					if(resG.getEdge(e.nodes[0], e.nodes[1]) ==null)		//Check if edge already exists
+					//if(resG.getEdge(e.nodes[0], e.nodes[1]) ==null)		//Check if edge already exists
 						resG.addEdge(new Edge(e.nodes[1],e.nodes[0],gFlows[e.nodes[0]][e.nodes[1]] ));
-					else resG.setEdge(e.nodes[0], e.nodes[1],gFlows[e.nodes[0]][e.nodes[1]] );
+					//else resG.setEdge(e.nodes[0], e.nodes[1],gFlows[e.nodes[0]][e.nodes[1]] );
 					resG_edge_directions[e.nodes[0]][e.nodes[1]] =2;	//2=backward
 				}				
 			}
