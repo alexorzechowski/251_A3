@@ -1,0 +1,178 @@
+import java.io.*;
+import java.util.*;
+
+
+
+
+public class FordFulkerson {
+
+	
+	public static ArrayList<Integer> pathDFS(Integer source, Integer destination, WGraph graph){
+		ArrayList<Integer> Stack = new ArrayList<Integer>();
+		// YOUR CODE GOES HERE
+		//Start at source, continue until you hit dest
+		int[] color = new int[graph.getNbNodes()];
+		int[] d = new int[graph.getNbNodes()];
+		int time=0;
+		int numDone=0;
+		for(int i=0; i<color.length; i++)
+			color[i]=0;	//Init all nodes to white
+		ArrayList<Integer> allNodes = new ArrayList<Integer>();
+		for(Edge e: graph.getEdges()){
+			if(allNodes.contains(e.nodes[0])==false )
+				allNodes.add(e.nodes[0]);
+			if(allNodes.contains(e.nodes[1])==false )
+				allNodes.add(e.nodes[1]);
+		}
+		
+		ArrayList<ArrayList<Integer>> adjList = new ArrayList<ArrayList<Integer>>(graph.getNbNodes());
+		for(int i=0; i<graph.getNbNodes(); i++)
+			adjList.add(new ArrayList<Integer>());
+		
+		for(int i=0; i<graph.getEdges().size(); i++){
+			Edge edge=graph.getEdges().get(i);
+			int n0=edge.nodes[0];
+			int n1=edge.nodes[1];
+			adjList.get(n0).add(n1);	//Add n1 to n0's adj list
+		}
+		Stack.add(destination);	//Add source as 1st on the path
+		ArrayList<Integer> pi = new ArrayList<Integer>(adjList.size());
+		for(int i=0; i<adjList.size(); i++)
+			pi.add(-1);
+		ArrayList<Integer> pi_new= DFS(source,destination, graph,allNodes,adjList,color,numDone, Stack,pi);
+		System.out.println("Pi is "+pi);
+		//Construct the path from Source to Dest
+		int pred=-1;
+		while(pi.get(destination)!=-1){
+			pred=pi.get(destination);
+			Stack.add(pred);
+			destination=pred;
+		}
+		if(pred==-1 && pi.lastIndexOf(pred)!=0){
+			System.out.println("No Path! Pi is "+Arrays.toString(pi.toArray()));
+			return new ArrayList<Integer>(0);
+		}
+		else{
+			System.out.println("Got to source");
+			Collections.reverse(Stack);
+			return Stack;
+		}
+		
+	}
+	public static ArrayList<Integer> DFS(Integer source, Integer destination, WGraph graph, ArrayList<Integer> allNodes,ArrayList<ArrayList<Integer>> adjList, int[] color, int numDone,ArrayList<Integer> Stack,ArrayList<Integer> pi ){		
+		color[source]=1;	//Mark Grey	
+		if(source!=destination){
+			for(int v: adjList.get(source) ){			
+				if(color[v]==0){
+					color[v]=1; //Mark Grey - discovered
+					//System.out.println("AdjList of node "+source+" is "+Arrays.toString(adjList.get(source).toArray()));
+					//System.out.println("Visiting node "+v);
+					pi.set(v, source);
+					//System.out.println("Pi is "+Arrays.toString(pi.toArray()));
+					DFS(v,destination,graph,allNodes,adjList,color, numDone,Stack,pi);
+				}				
+			}
+		}
+		color[source]=2;	//Mark Black
+		return pi;
+		
+	}
+	
+	
+	
+	public static void fordfulkerson(Integer source, Integer destination, WGraph graph, String filePath){
+		String answer="";
+		String myMcGillID = "260610696"; //Please initialize this variable with your McGill ID
+		int maxFlow = 0;
+		
+			// YOUR CODE GOES HERE
+		//Clone graph
+		WGraph resG = new WGraph(graph);
+		int n=resG.getNbNodes();
+		int rGraph[][]= new int[n][n];
+		//Assign rGraph to resG = graph
+		for(Edge e: resG.getEdges()){
+			rGraph[e.nodes[0]][e.nodes[1]] = e.weight;
+		}
+		System.out.println(rGraph.toString());	
+		while(!pathDFS(source,destination,resG).isEmpty()){
+			ArrayList<Integer> path = pathDFS(source,destination,resG);
+			int B=Integer.MAX_VALUE;
+			for(int i=0; i<path.size()-1; i++){
+				int n0 = path.get(i);	//n0 is parent
+				int n1 = path.get(i+1);	//n1 is child
+				B=Math.min(B, rGraph[n0][n1]);				
+			}
+			//Update res cap of edges, reverse edges
+			for(int i=0; i<path.size()-1; i++){
+				int n0 = path.get(i);	//n0 is parent
+				int n1 = path.get(i+1);	//n1 is child
+				rGraph[n0][n1]-=B;
+				rGraph[n1][n0]+=B;
+			}
+			maxFlow+=B;
+			
+			//rGraph=0 means no edges from u to v
+			//Update resG
+			for(int i=0; i<n; i++){
+				for(int j=0; j<n; j++){
+					if(rGraph[i][j]!=0){
+						if(resG.getEdge(i, j)==null)
+							resG.addEdge(new Edge(i,j,rGraph[i][j]));	//add edge if edge doesn't exist
+						else
+							resG.setEdge(i, j, rGraph[i][j]);	//Update flow if edge exists								
+					}
+				}
+			}
+		}
+		//Get the graph without the extra edges
+		WGraph newGraph = new WGraph();
+		ArrayList<Edge> resGEdges = resG.getEdges();
+		for(Edge e: resGEdges){
+			if(graph.getEdge(e.nodes[0], e.nodes[1]) !=null){
+				newGraph.addEdge(e);
+			}
+		}
+		graph=newGraph;
+		
+		
+			//End Your code
+		answer += maxFlow + "\n" + graph.toString();	
+		writeAnswer(filePath+myMcGillID+".txt",answer);
+		System.out.println(answer);
+	}
+	
+	
+	public static void writeAnswer(String path, String line){
+		BufferedReader br = null;
+		File file = new File(path);
+		// if file doesnt exists, then create it
+		
+		try {
+		if (!file.exists()) {
+			file.createNewFile();
+		}
+		FileWriter fw = new FileWriter(file.getAbsoluteFile(),true);
+		BufferedWriter bw = new BufferedWriter(fw);
+		bw.write(line+"\n");	
+		bw.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if (br != null)br.close();
+			} catch (IOException ex) {
+				ex.printStackTrace();
+			}
+		}
+	}
+	
+	 public static void main(String[] args){
+		 //String file = args[0];
+		 String file = "C:\\Users\\Alex\\Desktop\\Documents\\GitHub\\251_A3\\251_A3_Project\\src\\ff2.txt";
+		 File f = new File(file);
+		 WGraph g = new WGraph(file);	
+		 //System.out.println(Arrays.toString(pathDFS(g.getSource(),g.getDestination(),g).toArray()));
+		 fordfulkerson(g.getSource(),g.getDestination(),g,f.getAbsolutePath().replace(".txt",""));
+	 }
+}

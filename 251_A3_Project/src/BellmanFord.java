@@ -74,7 +74,6 @@ public class BellmanFord{
     			if(distances[e.nodes[0]]+e.weight < distances[e.nodes[1]]){
     				distances[e.nodes[1]]=distances[e.nodes[0]]+e.weight; //Relax Edge
     				predecessors[e.nodes[1]] = e.nodes[0];		//Mark pred
-    				System.out.println("pred of node "+e.nodes[1]+" is "+e.nodes[0]);
     			}
     		}
     	}
@@ -96,7 +95,6 @@ public class BellmanFord{
         ArrayList<Integer> path = new ArrayList<Integer>();
         int curNode=destination;
         predecessors[source]=-2;
-        System.out.println("pred is "+Arrays.toString(predecessors));
         for(int i=0; i<predecessors.length-1; i++){
         	if(curNode==-2)	//reached source
         		break;
@@ -140,6 +138,7 @@ public class BellmanFord{
     public static void main(String[] args){
 
         String file = args[0];
+    	//String file = "C:\\Users\\Alex\\Desktop\\Documents\\GitHub\\251_A3\\251_A3_Project\\src\\bf4.txt";
         WGraph g = new WGraph(file);
         try{
             BellmanFord bf = new BellmanFord(g, g.getSource());
